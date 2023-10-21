@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          String                 @id @default(uuid())
+  name        String
+  description String?                @db.VarChar(200)
+  imageUrl    String?                @db.Text
+  latitude    Float?
+  longitude   Float?
+  address     String
+  rating      Float
+  category    Category               @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  dishes      Dish[]
+  featureds   RestaurantToFeatured[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([categoryId])
+}
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String
+  imageUrl    String       @db.Text
+  restaurants Restaurant[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Dish {
+  id           String      @id @default(uuid())
+  name         String
+  description  String?     @db.VarChar(200)
+  price        Float?
+  imageUrl     String?     @db.Text
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantId String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([restaurantId])
+}
+
+model Featured {
+  id          String                 @id @default(uuid())
+  name        String
+  description String
+  restaurants RestaurantToFeatured[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model RestaurantToFeatured {
+  id           String     @id @default(uuid())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  featured     Featured   @relation(fields: [featuredId], references: [id])
+  featuredId   String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([restaurantId])
+  @@index([featuredId])
+}
